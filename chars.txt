@@ -1,0 +1,19 @@
+    .start  go
+separator:  .string ": "
+newline:    .integer #10
+first:      .integer #32
+last:       .integer #127
+
+;r0 will hold the newline character
+;r1 will hold the character to print
+
+go:     movmr newline r0
+        movmr first r1
+loop:   printi r1
+        outs separator
+        outcr r1
+        outcr r0
+        addir #1 r1
+        cmpmr last r1
+        jmpne loop
+        .end

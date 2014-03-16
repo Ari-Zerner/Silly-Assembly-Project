@@ -1,0 +1,29 @@
+0 0:                                .start  go
+1 0:  2 58 32                       separator:  .string ": "
+2 3:  10                            newline:    .integer #10
+3 4:  32                            first:      .integer #32
+4 5:  127                           last:       .integer #127
+5
+6 6:                                ;r0 will hold the newline character
+7 6:                                ;r1 will hold the character to print
+8
+9 6:  8 3 0                         go:     movmr newline r0
+10 9:  8 4 1                        movmr first r1
+11 12:  49 1                        loop:   printi r1
+12 14:  55 0                        outs separator
+13 16:  45 1                        outcr r1
+14 18:  45 0                        outcr r0
+15 20:  12 1 1                      addir #1 r1
+16 23:  35 5 1                      cmpmr last r1
+17 26:  57 12                       jmpne loop
+18 28:                              .end
+
+Symbol Table:
+first 4
+go 6
+last 5
+loop 12
+newline 3
+separator 0
+
+Number Assembly Errors: 0

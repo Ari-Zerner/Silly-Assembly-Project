@@ -1,0 +1,224 @@
+; Game of Life by Ari Zerner
+        .start  choice
+Size:       .integer #15
+Colony:     .allocate #289
+NewColony:      .allocate #289
+ChoicePrompt1:  .string "If you wish to select starting cells, type 'c'."
+ChoicePrompt2:  .string "Otherwise, press enter. "
+CellsPrompt1:   .string "Input starting cells in a list with columns"
+CellsPrompt2:   .string "after rows, one row or column per line."
+CellsPrompt3:   .string "Type "done" when done."
+GenNumString:   .string "Generation #"
+NumGens:    .integer #12
+
+; r2 will hold the current generation
+; rows start at 0
+; columns start at 0
+
+    ; asks if the user would like to select starting cells
+choice:     outs choicePrompt1
+            outci #10 ;newline
+            outs choicePrompt2
+            readc r9
+            cmpir #99 r9 ;c
+            jmpz userInit
+            cmpir #67 r9 ;C
+            jmpz userInit
+            jmp autoInit
+
+    ; automatically initiates the colony
+autoInit:   movir #5 r5
+            movir #5 r6
+            jsr setAlive
+            movir #6 r5
+            movir #6 r6
+            jsr setAlive
+            movir #7 r5
+            movir #6 r6
+            jsr setAlive
+            movir #7 r5
+            movir #5 r6
+            jsr setAlive
+            movir #7 r5
+            movir #4 r6
+            jsr setAlive
+            jmp run
+
+    ; gets starting cells from the user
+userInit:   outs cellsPrompt1
+            outci #10 ;newline
+            outs cellsPrompt2
+            outci #10 ;newline
+            outs cellsPrompt3
+            outci #10 ;newline
+readCellLoop:   readi r5 r7
+            cmpir #0 r7
+            jmpne run
+            readi r6 r8
+            cmpir #0 r8
+            jmpne run
+            cmpir #0 r5
+            jmpn readCellLoop
+            cmpir #14 r5 ;size - 1
+            jmpp readCellLoop
+            cmpir #0 r6
+            jmpn readCellLoop
+            cmpir #14 r6 ;size - 1
+            jmpp readCellLoop
+            jsr setAlive
+            jmp readCellLoop
+
+    ; sets a cell in cells to alive
+    ; the row is in r5
+    ; the column is in r6
+setAlive:   jsr index
+            movar colony r8
+            addrr r1 r8
+            movir #1 r9
+            movrx r9 r8
+            ret
+
+    ; runs the evolution and printing loop
+run:        movir #0 r7
+            movmr numGens r8
+            jsr print
+runLoop:    jsr evolve
+            jsr print
+            cmpmr numGens r2
+            jmpne runLoop
+            halt
+
+    ; prints the colony
+print:      outs genNumString
+            printi r2
+            outci #10 ;newline character
+            clrr r5
+pRowLoop:   jsr printRow
+            addir #1 r5
+            cmpmr size r5
+            jmpne pRowLoop
+            ret
+
+    ; prints a row of the colony
+    ; the row to print is in r5
+printRow:   clrr r6
+pColLoop:   jsr index
+            movar colony r8
+            addrr r1 r8
+            movxr r8 r9
+            mulir #10 r9 ;transform 0  and  1
+            addir #32 r9 ;to       ' ' and '*'
+            outcr r9
+            addir #1 r6
+            cmpmr size r6
+            jmpne pColLoop
+            outci #10 ;newline
+            ret
+
+    ; evolves the colony
+evolve:     clrr r5
+eRowLoop:   jsr evolveRow
+            addir #1 r5
+            cmpmr size r5
+            jmpne eRowLoop
+            movar newColony r7
+            movar colony r8
+            movir #289 r9
+            movb r7 r8 r9
+            addir #1 r2
+            ret
+
+
+
+
+
+
+    ; evolves a row of the colony
+    ; the row to evolve is in r5
+evolveRow:  clrr r6
+eColLoop:   jsr countNeighbors
+            jsr index
+            cmpir #3 r0
+            jmpz nc3
+            cmpir #2 r0
+            jmpz nc2
+            jsr setNewDead
+            jmp cellDone
+nc3:        jsr setNewAlive
+            jmp cellDone
+nc2:        movar colony r8
+            addrr r1 r8
+            movxr r8 r9
+            movar newColony r8
+            addrr r1 r8
+            movrx r9 r8
+cellDone:   addir #1 r6
+            cmpmr size r6
+            jmpne eColLoop
+            ret
+
+    ; counts a cells neighbors
+    ; the row is in r5
+    ; the column is in r6
+    ; the neighbor count will be in r0
+countNeighbors: clrr r0
+            subir #1 r5
+            jsr addCell
+            addir #1 r6
+            jsr addCell
+            addir #1 r5
+            jsr addCell
+            addir #1 r5
+            jsr addCell
+            subir #1 r6
+            jsr addCell
+            subir #1 r6
+            jsr addCell
+            subir #1 r5
+            jsr addCell
+            subir #1 r5
+            ;jsr addCell
+            ;ret
+addCell:    jsr index
+            movar colony r8
+            addrr r1 r8
+            addxr r8 r0
+            ret
+
+    ; sets a cell to alive in newCells
+    ; the row is in r5
+    ; the column is in r6
+setNewAlive:    jsr index
+            movar newColony r8
+            addrr r1 r8
+            movir #1 r9
+            movrx r9 r8
+            ret
+
+    ; sets a cell to dead in newCells
+    ; the row is in r5
+    ; the column is in r6
+setNewDead:     jsr index
+            movar newColony r8
+            addrr r1 r8
+            movir #0 r9
+            movrx r9 r8
+            ret
+
+
+
+
+    ; gets the index of a row and column
+    ; the row is in r5
+    ; the column is in r6
+    ; the index will be in r1
+index:      movrr r5 r1
+            addir #1 r1
+            movmr size r7
+            addir #2 r7
+            mulrr r7 r1
+            addrr r6 r1
+            addir #1 r1
+            ret
+
+            .end

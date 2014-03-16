@@ -1,0 +1,18 @@
+        .start      go
+
+Go:     movar end r0
+        printi r0
+        outci #10
+        movar go r0
+        printi r0
+        outci #10
+        movar end r0
+        clrr r1
+Loop:   movxr r1 r2
+        printi r2
+        outci #10
+        addir #1 r1
+        cmprr r0 r1
+        jmpn loop
+        halt
+End:    .end

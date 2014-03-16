@@ -1,0 +1,25 @@
+0 0:                                .start      go
+1
+2 0:  10 35 0                       Go:     movar end r0
+3 3:  49 0                          printi r0
+4 5:  44 10                         outci #10
+5 7:  10 0 0                        movar go r0
+6 10:  49 0                         printi r0
+7 12:  44 10                        outci #10
+8 14:  10 35 0                      movar end r0
+9 17:  1 1                          clrr r1
+10 19:  9 1 2                       Loop:   movxr r1 r2
+11 22:  49 2                        printi r2
+12 24:  44 10                       outci #10
+13 26:  12 1 1                      addir #1 r1
+14 29:  34 0 1                      cmprr r0 r1
+15 32:  36 19                       jmpn loop
+16 34:  0                           halt
+17 35:                              End:    .end
+
+Symbol Table:
+end 35
+go 0
+loop 19
+
+Number Assembly Errors: 0

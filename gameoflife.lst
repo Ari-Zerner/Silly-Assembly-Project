@@ -1,0 +1,261 @@
+0 0:                                ; Game of Life by Ari Zerner
+1 0:                                .start  choice
+2 0:  15                            Size:       .integer #15
+3 1:  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 Colony:     .allocate #289
+4 290:  0 0 0 0 0 0 0 0 0 0 0 0 0 0 NewColony:      .allocate #289
+5 579:  47 73 102 32 121 111 117 32 ChoicePrompt1:  .string "If you wish to select starting cells, type 'c'."
+6 627:  24 79 116 104 101 114 119   ChoicePrompt2:  .string "Otherwise, press enter. "
+7 652:  43 73 110 112 117 116 32    CellsPrompt1:   .string "Input starting cells in a list with columns"
+8 696:  39 97 102 116 101 114 32    CellsPrompt2:   .string "after rows, one row or column per line."
+9 736:  22 84 121 112 101 32 34 100 CellsPrompt3:   .string "Type "done" when done."
+10 759:  12 71 101 110 101 114 97   GenNumString:   .string "Generation #"
+11 772:  12                         NumGens:    .integer #12
+12
+13 773:                             ; r2 will hold the current generation
+14 773:                             ; rows start at 0
+15 773:                             ; columns start at 0
+16
+17 773:                             ; asks if the user would like to select starting cells
+18 773:  55 579                     choice:     outs choicePrompt1
+19 775:  44 10                      outci #10 ;newline
+20 777:  55 627                     outs choicePrompt2
+21 779:  50 9                       readc r9
+22 781:  33 99 9                    cmpir #99 r9 ;c
+23 784:  37 835                     jmpz userInit
+24 786:  33 67 9                    cmpir #67 r9 ;C
+25 789:  37 835                     jmpz userInit
+26 791:  28 793                     jmp autoInit
+27
+28 793:                             ; automatically initiates the colony
+29 793:  5 5 5                      autoInit:   movir #5 r5
+30 796:  5 5 6                      movir #5 r6
+31 799:  39 887                     jsr setAlive
+32 801:  5 6 5                      movir #6 r5
+33 804:  5 6 6                      movir #6 r6
+34 807:  39 887                     jsr setAlive
+35 809:  5 7 5                      movir #7 r5
+36 812:  5 6 6                      movir #6 r6
+37 815:  39 887                     jsr setAlive
+38 817:  5 7 5                      movir #7 r5
+39 820:  5 5 6                      movir #5 r6
+40 823:  39 887                     jsr setAlive
+41 825:  5 7 5                      movir #7 r5
+42 828:  5 4 6                      movir #4 r6
+43 831:  39 887                     jsr setAlive
+44 833:  28 902                     jmp run
+45
+46 835:                             ; gets starting cells from the user
+47 835:  55 652                     userInit:   outs cellsPrompt1
+48 837:  44 10                      outci #10 ;newline
+49 839:  55 696                     outs cellsPrompt2
+50 841:  44 10                      outci #10 ;newline
+51 843:  55 736                     outs cellsPrompt3
+52 845:  44 10                      outci #10 ;newline
+53 847:  48 5 7                     readCellLoop:   readi r5 r7
+54 850:  33 0 7                     cmpir #0 r7
+55 853:  57 902                     jmpne run
+56 855:  48 6 8                     readi r6 r8
+57 858:  33 0 8                     cmpir #0 r8
+58 861:  57 902                     jmpne run
+59 863:  33 0 5                     cmpir #0 r5
+60 866:  36 847                     jmpn readCellLoop
+61 868:  33 14 5                    cmpir #14 r5 ;size - 1
+62 871:  38 847                     jmpp readCellLoop
+63 873:  33 0 6                     cmpir #0 r6
+64 876:  36 847                     jmpn readCellLoop
+65 878:  33 14 6                    cmpir #14 r6 ;size - 1
+66 881:  38 847                     jmpp readCellLoop
+67 883:  39 887                     jsr setAlive
+68 885:  28 847                     jmp readCellLoop
+69
+70 887:                             ; sets a cell in cells to alive
+71 887:                             ; the row is in r5
+72 887:                             ; the column is in r6
+73 887:  39 1133                    setAlive:   jsr index
+74 889:  10 1 8                     movar colony r8
+75 892:  13 1 8                     addrr r1 r8
+76 895:  5 1 9                      movir #1 r9
+77 898:  53 9 8                     movrx r9 r8
+78 901:  40                         ret
+79
+80 902:                             ; runs the evolution and printing loop
+81 902:  5 0 7                      run:        movir #0 r7
+82 905:  8 772 8                    movmr numGens r8
+83 908:  39 920                     jsr print
+84 910:  39 971                     runLoop:    jsr evolve
+85 912:  39 920                     jsr print
+86 914:  35 772 2                   cmpmr numGens r2
+87 917:  57 910                     jmpne runLoop
+88 919:  0                          halt
+89
+90 920:                             ; prints the colony
+91 920:  55 759                     print:      outs genNumString
+92 922:  49 2                       printi r2
+93 924:  44 10                      outci #10 ;newline character
+94 926:  1 5                        clrr r5
+95 928:  39 939                     pRowLoop:   jsr printRow
+96 930:  12 1 5                     addir #1 r5
+97 933:  35 0 5                     cmpmr size r5
+98 936:  57 928                     jmpne pRowLoop
+99 938:  40                         ret
+100
+101 939:                            ; prints a row of the colony
+102 939:                            ; the row to print is in r5
+103 939:  1 6                       printRow:   clrr r6
+104 941:  39 1133                   pColLoop:   jsr index
+105 943:  10 1 8                    movar colony r8
+106 946:  13 1 8                    addrr r1 r8
+107 949:  9 8 9                     movxr r8 r9
+108 952:  20 10 9                   mulir #10 r9 ;transform 0  and  1
+109 955:  12 32 9                   addir #32 r9 ;to       ' ' and '*'
+110 958:  45 9                      outcr r9
+111 960:  12 1 6                    addir #1 r6
+112 963:  35 0 6                    cmpmr size r6
+113 966:  57 941                    jmpne pColLoop
+114 968:  44 10                     outci #10 ;newline
+115 970:  40                        ret
+116
+117 971:                            ; evolves the colony
+118 971:  1 5                       evolve:     clrr r5
+119 973:  39 1000                   eRowLoop:   jsr evolveRow
+120 975:  12 1 5                    addir #1 r5
+121 978:  35 0 5                    cmpmr size r5
+122 981:  57 973                    jmpne eRowLoop
+123 983:  10 290 7                  movar newColony r7
+124 986:  10 1 8                    movar colony r8
+125 989:  5 289 9                   movir #289 r9
+126 992:  11 7 8 9                  movb r7 r8 r9
+127 996:  12 1 2                    addir #1 r2
+128 999:  40                        ret
+129
+130
+131
+132
+133
+134
+135 1000:                           ; evolves a row of the colony
+136 1000:                           ; the row to evolve is in r5
+137 1000:  1 6                      evolveRow:  clrr r6
+138 1002:  39 1051                  eColLoop:   jsr countNeighbors
+139 1004:  39 1133                  jsr index
+140 1006:  33 3 0                   cmpir #3 r0
+141 1009:  37 1020                  jmpz nc3
+142 1011:  33 2 0                   cmpir #2 r0
+143 1014:  37 1024                  jmpz nc2
+144 1016:  39 1118                  jsr setNewDead
+145 1018:  28 1042                  jmp cellDone
+146 1020:  39 1103                  nc3:        jsr setNewAlive
+147 1022:  28 1042                  jmp cellDone
+148 1024:  10 1 8                   nc2:        movar colony r8
+149 1027:  13 1 8                   addrr r1 r8
+150 1030:  9 8 9                    movxr r8 r9
+151 1033:  10 290 8                 movar newColony r8
+152 1036:  13 1 8                   addrr r1 r8
+153 1039:  53 9 8                   movrx r9 r8
+154 1042:  12 1 6                   cellDone:   addir #1 r6
+155 1045:  35 0 6                   cmpmr size r6
+156 1048:  57 1002                  jmpne eColLoop
+157 1050:  40                       ret
+158
+159 1051:                           ; counts a cells neighbors
+160 1051:                           ; the row is in r5
+161 1051:                           ; the column is in r6
+162 1051:                           ; the neighbor count will be in r0
+163 1051:  1 0                      countNeighbors: clrr r0
+164 1053:  16 1 5                   subir #1 r5
+165 1056:  39 1091                  jsr addCell
+166 1058:  12 1 6                   addir #1 r6
+167 1061:  39 1091                  jsr addCell
+168 1063:  12 1 5                   addir #1 r5
+169 1066:  39 1091                  jsr addCell
+170 1068:  12 1 5                   addir #1 r5
+171 1071:  39 1091                  jsr addCell
+172 1073:  16 1 6                   subir #1 r6
+173 1076:  39 1091                  jsr addCell
+174 1078:  16 1 6                   subir #1 r6
+175 1081:  39 1091                  jsr addCell
+176 1083:  16 1 5                   subir #1 r5
+177 1086:  39 1091                  jsr addCell
+178 1088:  16 1 5                   subir #1 r5
+179 1091:                           ;jsr addCell
+180 1091:                           ;ret
+181 1091:  39 1133                  addCell:    jsr index
+182 1093:  10 1 8                   movar colony r8
+183 1096:  13 1 8                   addrr r1 r8
+184 1099:  15 8 0                   addxr r8 r0
+185 1102:  40                       ret
+186
+187 1103:                           ; sets a cell to alive in newCells
+188 1103:                           ; the row is in r5
+189 1103:                           ; the column is in r6
+190 1103:  39 1133                  setNewAlive:    jsr index
+191 1105:  10 290 8                 movar newColony r8
+192 1108:  13 1 8                   addrr r1 r8
+193 1111:  5 1 9                    movir #1 r9
+194 1114:  53 9 8                   movrx r9 r8
+195 1117:  40                       ret
+196
+197 1118:                           ; sets a cell to dead in newCells
+198 1118:                           ; the row is in r5
+199 1118:                           ; the column is in r6
+200 1118:  39 1133                  setNewDead:     jsr index
+201 1120:  10 290 8                 movar newColony r8
+202 1123:  13 1 8                   addrr r1 r8
+203 1126:  5 0 9                    movir #0 r9
+204 1129:  53 9 8                   movrx r9 r8
+205 1132:  40                       ret
+206
+207
+208
+209
+210 1133:                           ; gets the index of a row and column
+211 1133:                           ; the row is in r5
+212 1133:                           ; the column is in r6
+213 1133:                           ; the index will be in r1
+214 1133:  6 5 1                    index:      movrr r5 r1
+215 1136:  12 1 1                   addir #1 r1
+216 1139:  8 0 7                    movmr size r7
+217 1142:  12 2 7                   addir #2 r7
+218 1145:  21 7 1                   mulrr r7 r1
+219 1148:  13 6 1                   addrr r6 r1
+220 1151:  12 1 1                   addir #1 r1
+221 1154:  40                       ret
+222
+223 1155:                           .end
+
+Symbol Table:
+addcell 1091
+autoinit 793
+celldone 1042
+cellsprompt1 652
+cellsprompt2 696
+cellsprompt3 736
+choice 773
+choiceprompt1 579
+choiceprompt2 627
+colony 1
+countneighbors 1051
+ecolloop 1002
+erowloop 973
+evolve 971
+evolverow 1000
+gennumstring 759
+index 1133
+nc2 1024
+nc3 1020
+newcolony 290
+numgens 772
+pcolloop 941
+print 920
+printrow 939
+prowloop 928
+readcellloop 847
+run 902
+runloop 910
+setalive 887
+setnewalive 1103
+setnewdead 1118
+size 0
+userinit 835
+
+Number Assembly Errors: 0

@@ -1,0 +1,44 @@
+0 0:                                ; r5 to the r6 stored in r0
+1 0:  5 1 0                         Power:      movir #1 r0
+2 3:  21 5 0                        PowerLoop:  mulrr r5 r0
+3 6:  30 6 3                        sojnz r6 powerLoop
+4 9:  40                            ret
+5
+6 10:  11 32 114 97 105 115 101 100 RaisedTo:   .string " raised to "
+7 22:  4 32 105 115 32              Is:         .string " is "
+8
+9 27:                               ; r5 raised to r6 is r0\n
+10 27:  49 5                        PrintPower: printi r5
+11 29:  55 10                       outs raisedTo
+12 31:  49 6                        printi r6
+13 33:  55 22                       outs is
+14 35:  49 0                        printi r0
+15 37:  44 10                       outci #10 ; \n
+16 39:  40                          ret
+17
+18 40:                              .start main
+19
+20 40:  5 3 5                       Main:       movir #3 r5
+21 43:  5 2 6                       movir #2 r6
+22 46:  39 0                        jsr power
+23 48:  39 27                       jsr printPower
+24 50:  5 5 5                       movir #5 r5
+25 53:  5 4 6                       movir #4 r6
+26 56:  39 0                        jsr power
+27 58:  39 27                       jsr printPower
+28 60:  5 9 5                       movir #9 r5
+29 63:  5 3 6                       movir #3 r6
+30 66:  39 0                        jsr power
+31 68:  39 27                       jsr printPower
+32 70:  0                           halt
+33 71:                              .end
+
+Symbol Table:
+is 22
+main 40
+power 0
+powerloop 3
+printpower 27
+raisedto 10
+
+Number Assembly Errors: 0
